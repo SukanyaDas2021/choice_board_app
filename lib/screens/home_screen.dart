@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Choice Board App',
+          'Choice Board',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.indigo[900]
