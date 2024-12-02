@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:io';
 import '../models/choice_board.dart';
 import 'create_choice_board_screen.dart';
 import 'choice_board_detail_screen.dart';
+import 'saved_choices_screen.dart'; // Make sure you import the screen for saved choices
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -95,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'Choice Board',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.indigo[900]
+            color: Colors.indigo[900],
           ),
           textAlign: TextAlign.center,
         ),
@@ -108,13 +110,25 @@ class _HomeScreenState extends State<HomeScreen> {
           : ListView.builder(
         itemCount: choiceBoards.length,
         itemBuilder: (context, index) {
+          final choiceBoard = choiceBoards[index];
           return Card(
             elevation: 3,
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              leading: choiceBoard.imagePath != null && choiceBoard.imagePath!.isNotEmpty
+                  ? Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Image.file(
+                  File(choiceBoard.imagePath!),
+                  width: 50, // Thumbnail width
+                  height: 50, // Thumbnail height
+                  fit: BoxFit.cover,
+                ),
+              )
+                  : null, // Show leading image if available, otherwise null
               title: Text(
-                choiceBoards[index].name,
+                choiceBoard.name,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               trailing: Row(
@@ -149,8 +163,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        ChoiceBoardDetailScreen(choiceBoard: choiceBoards[index]),
+                    builder: (context) => ChoiceBoardDetailScreen(
+                      choiceBoard: choiceBoards[index],
+                    ),
                   ),
                 );
               },
@@ -160,19 +175,44 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: Container(
         alignment: Alignment.bottomCenter,
-        child: FloatingActionButton(
-          onPressed: () async {
-            final ChoiceBoard? newBoard = await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CreateChoiceBoardScreen(onSave: saveChoiceBoard)),
-            );
-            if (newBoard != null) {
-              saveChoiceBoard(newBoard);
-            }
-          },
-          child: Icon(Icons.add, size: 30,),
-          tooltip: 'Create New Choice Board',
-          backgroundColor: Colors.indigo[100],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // View Saved Choices Button
+            FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SavedChoicesScreen(),
+                  ),
+                );
+              },
+              child: Icon(Icons.visibility, size: 30),
+              tooltip: 'View Saved Choices',
+              backgroundColor: Colors.indigo[100],
+            ),
+            SizedBox(width: 16), // Add space between buttons
+            // Create New Choice Board Button
+            FloatingActionButton(
+              onPressed: () async {
+                final ChoiceBoard? newBoard = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateChoiceBoardScreen(
+                      onSave: saveChoiceBoard,
+                    ),
+                  ),
+                );
+                if (newBoard != null) {
+                  saveChoiceBoard(newBoard);
+                }
+              },
+              child: Icon(Icons.add, size: 30),
+              tooltip: 'Create New Choice Board',
+              backgroundColor: Colors.indigo[100],
+            ),
+          ],
         ),
       ),
     );

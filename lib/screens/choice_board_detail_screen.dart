@@ -39,29 +39,47 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.choiceBoard.name)),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Expanded(
+              child: Center(
+                child: Text(
+                  widget.choiceBoard.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold, // Make the text bold
+                  ),
+                ),
+              ),
+            ),
+            if (widget.choiceBoard.imagePath != null && widget.choiceBoard.imagePath!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.file(
+                  File(widget.choiceBoard.imagePath!),
+                  width: 50, // Thumbnail width
+                  height: 50, // Thumbnail height
+                  fit: BoxFit.cover,
+                ),
+              ),
+          ],
+        ),
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
           final screenHeight = constraints.maxHeight;
           final itemCount = widget.choiceBoard.choices.length;
 
-          // Calculate the number of columns and rows based on the number of items
+          // Determine the number of columns
           int crossAxisCount;
-          int rowCount;
 
-          if (itemCount <= 2) {
-            crossAxisCount = itemCount;
-            rowCount = 1;
+          if (itemCount == 3) {
+            crossAxisCount = 3; // 3 items in a single row
           } else if (itemCount <= 4) {
-            crossAxisCount = 2;
-            rowCount = (itemCount / 2).ceil();
-          } else if (itemCount <= 6) {
-            crossAxisCount = 3;
-            rowCount = (itemCount / 3).ceil();
+            crossAxisCount = 2; // 2 items per row if 4 or fewer items
           } else {
-            crossAxisCount = 4;
-            rowCount = (itemCount / 4).ceil();
+            crossAxisCount = 3; // Default to 3 columns
           }
 
           // Calculate dynamic spacing based on screen width
@@ -70,7 +88,7 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
           final padding = screenWidth * 0.02; // 2% of screen width
 
           // Adjust childAspectRatio to fit all items within the screen height
-          final childAspectRatio = (screenWidth / crossAxisCount) / (screenHeight / rowCount);
+          final childAspectRatio = (screenWidth / crossAxisCount) / (screenHeight / ((itemCount / crossAxisCount).ceil()));
 
           return GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -90,7 +108,9 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
                   }
                 },
                 child: Container(
-                  color: Colors.grey[300],
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 2.0), // Black border with width of 2.0
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

@@ -11,7 +11,6 @@ void main() {
   ]).then((_) {
     runApp(ChoiceBoardApp());
   });
-  //runApp(ChoiceBoardApp());
 }
 
 class ChoiceBoardApp extends StatelessWidget {

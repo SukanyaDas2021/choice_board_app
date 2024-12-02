@@ -39,6 +39,7 @@ class _ChoiceInputWidgetState extends State<ChoiceInputWidget> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
+      print('Saving image path: ${pickedFile}');
       widget.onChoiceChanged(Choice(
         imagePath: pickedFile.path,
         audioPath: widget.choice.audioPath,
