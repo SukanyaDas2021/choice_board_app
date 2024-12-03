@@ -35,22 +35,18 @@ class _ChoiceInputWidgetState extends State<ChoiceInputWidget> {
   }
 
   Future<void> _pickImage(BuildContext context) async {
-    try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-      if (pickedFile != null) {
-        widget.onChoiceChanged(Choice(
-          imagePath: pickedFile.path,
-          audioPath: widget.choice.audioPath,
-          text: _textController.text,
-        ));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+    if (pickedFile != null) {
+      print('Saving image path: ${pickedFile}');
+      widget.onChoiceChanged(Choice(
+        imagePath: pickedFile.path,
+        audioPath: widget.choice.audioPath,
+        text: _textController.text,
+      ));
     }
   }
-
 
   Future<void> _pickAudio(BuildContext context) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);

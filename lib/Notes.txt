@@ -1,0 +1,17 @@
+This is dev branch.
+- database_helper (sqflite) has been added
+- saved_choices_screen.dart has been added
+    - choices can be created and saved
+    - choices saved are stored in the sqlite db
+    - they can be viewed in this screen
+    - choices can be edited or deleted
+    - during the edit of a choice:
+        - if image is modified, the new modified image thumbnail does not appear on the edit screen
+        - but when the choice is saved, the changed image appears then
+        - this is due to the fact that the choices are being pulled from the db and only when the choice is saved in db it is visible on the screen
+        - same happens with editing the audio
+        - this needs modification
+- homescreen.dart has been modified to add an icon to view the saved choices
+- existing functionality while creating new choice board does not implement the database sqlite, but continues to use the shared_preferences
+- Functionality to add all new choice boards to the database remains to be done.
+- Currently the database sqlite implementation part remains only in the dev branch.
