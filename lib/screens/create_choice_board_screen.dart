@@ -21,16 +21,15 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
   late List<Choice> _choices;
   late AudioPlayer _audioPlayer;
   bool isPlaying = false;
+  String? _boardImagePath; // Variable to hold the board image path
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.initialChoiceBoard?.name ?? '');
-
-    // Initialize _choices and _choiceControllers
     _choices = widget.initialChoiceBoard?.choices ?? [];
     _choiceControllers = _choices.map((choice) => TextEditingController(text: choice.text)).toList();
-
+    _boardImagePath = widget.initialChoiceBoard?.imagePath; // Initialize board image path if provided
     _audioPlayer = AudioPlayer();
   }
 
@@ -42,6 +41,17 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
     }
     _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickBoardImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _boardImagePath = pickedFile.path;
+      });
+    }
   }
 
   Future<void> _pickImage(int index) async {
@@ -96,6 +106,13 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
     });
   }
 
+  void _deleteChoice(int index) {
+    setState(() {
+      _choices.removeAt(index);
+      _choiceControllers.removeAt(index).dispose();
+    });
+  }
+
   void _showConfirmationDialog() async {
     final result = await showDialog(
       context: context,
@@ -127,7 +144,6 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
   }
 
   void _saveChoiceBoard() {
-    // Check if there are at least two valid choices
     bool hasValidChoices = _choices.length >= 2 &&
         _choices.where((choice) =>
         choice.imagePath.isNotEmpty ||
@@ -135,12 +151,12 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                 choice.text.trim() != 'text').length >= 2;
 
     if (_nameController.text.isEmpty || !hasValidChoices) {
-      // Show an error dialog or a message
       _showErrorDialog();
     } else {
       final choiceBoard = ChoiceBoard(
         name: _nameController.text,
         choices: _choices,
+        imagePath: _boardImagePath, // Save the board image path
       );
       widget.onSave(choiceBoard);
       Navigator.pop(context);
@@ -171,12 +187,12 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.indigo[100], // Change the background color
-        centerTitle: true, // Center the title
+        backgroundColor: Colors.indigo[100],
+        centerTitle: true,
         title: Text(
           widget.initialChoiceBoard == null ? 'Create Choice Board' : 'Edit Choice Board',
           style: TextStyle(
-            fontWeight: FontWeight.bold, // Make the text bold
+            fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
@@ -196,7 +212,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                 'Save',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold, // Make the text bold
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -207,6 +223,13 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
+            GestureDetector(
+              onTap: _pickBoardImage,
+              child: _boardImagePath == null
+                  ? Icon(Icons.add_photo_alternate, size: 100)
+                  : Image.file(File(_boardImagePath!), height: 100, width: 100),
+            ),
+            SizedBox(height: 8.0),
             TextField(
               controller: _nameController,
               decoration: InputDecoration(labelText: 'Board Name'),
@@ -216,7 +239,6 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                 itemCount: _choices.length,
                 itemBuilder: (context, index) {
                   final choice = _choices[index];
-
                   TextEditingController controller = _choiceControllers[index];
 
                   return Card(
@@ -281,6 +303,10 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                                 ),
                               ],
                             ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteChoice(index),
                           ),
                         ],
                       ),
