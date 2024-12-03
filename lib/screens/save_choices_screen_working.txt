@@ -20,18 +20,20 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
   @override
   void initState() {
     super.initState();
-    loadSavedChoices();
+    loadSavedChoices(); // Call async function in initState
 
+    // Listen to audio player state changes
     _audioPlayer.playerStateStream.listen((playerState) {
       if (playerState.processingState == ProcessingState.completed) {
         setState(() {
           isPlaying = false;
-          currentAudioPath = null;
+          currentAudioPath = null;  // Reset current audio path once the audio completes
         });
       }
     });
   }
 
+  // Mark this function as async since it uses await
   Future<void> loadSavedChoices() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? savedChoicesJson = prefs.getStringList('savedChoices');
@@ -59,6 +61,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
     });
   }
 
+  // Mark this function as async since it uses await
   Future<void> _deleteChoice(int index) async {
     bool? deleteConfirmed = await showDialog<bool>(
       context: context,
@@ -88,13 +91,13 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
       setState(() {
         savedChoices.removeAt(index);
       });
+      // Update SharedPreferences after deletion
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List<String> updatedChoicesJson =
       savedChoices.map((choice) => jsonEncode(choice)).toList();
       await prefs.setStringList('savedChoices', updatedChoicesJson);
     }
   }
-
 
   Future<void> _editChoice(int index) async {
     final choice = savedChoices[index];
@@ -238,128 +241,9 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
     setState(() {});
   }
 
-
-  Future<void> _addNewChoice() async {
-    String? newText;
-    String? newImagePath;
-    String? newAudioPath;
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text('Create New Choice'),
-              content: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Text'),
-                      onChanged: (value) {
-                        newText = value;
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    TextButton.icon(
-                      onPressed: () async {
-                        final pickedFile = await ImagePicker().pickImage(
-                          source: ImageSource.gallery,
-                        );
-                        if (pickedFile != null) {
-                          setState(() {
-                            newImagePath = pickedFile.path;
-                          });
-                        }
-                      },
-                      icon: Icon(Icons.add_a_photo),
-                      label: Text(newImagePath == null ? 'Add Image' : 'Change Image'),
-                    ),
-                    if (newImagePath != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Image.file(
-                          File(newImagePath!),
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    SizedBox(height: 20),
-                    TextButton.icon(
-                      onPressed: () async {
-                        final pickedAudio = await FilePicker.platform.pickFiles(
-                          type: FileType.audio,
-                        );
-                        if (pickedAudio != null) {
-                          setState(() {
-                            newAudioPath = pickedAudio.files.single.path!;
-                          });
-                        }
-                      },
-                      icon: Icon(Icons.audiotrack),
-                      label: Text(newAudioPath == null ? 'Add Audio' : 'Change Audio'),
-                    ),
-                    if (newAudioPath != null)
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              setState(() {
-                                newAudioPath = null;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    if (newText != null && newText!.trim().isNotEmpty) {
-                      // Update the state
-                      setState(() {
-                        savedChoices.add({
-                          'text': newText,
-                          'imagePath': newImagePath,
-                          'audioPath': newAudioPath,
-                        });
-                      });
-
-                      // Save the updated list to SharedPreferences
-                      await _updateChoicesInPrefs();
-
-                      // Refresh the UI by reloading the choices
-                      await loadSavedChoices();
-
-                      // Close the dialog
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
   Future<void> _updateChoicesInPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> updatedChoicesJson =
-    savedChoices.map((choice) => jsonEncode(choice)).toList();
+    List<String> updatedChoicesJson = savedChoices.map((choice) => jsonEncode(choice)).toList();
     await prefs.setStringList('savedChoices', updatedChoicesJson);
   }
 
@@ -375,20 +259,6 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
       appBar: AppBar(
         title: Text('Saved Choices'),
         backgroundColor: Colors.indigo[100],
-        actions: [
-          TextButton(
-            onPressed: _addNewChoice,
-            child: Text(
-              'New Choice',
-              style: TextStyle(
-                color: Colors.indigo[800], // Matches the AppBar text color
-                fontWeight: FontWeight.bold,
-                backgroundColor: Colors.lightBlue[100],
-                fontSize: 20,
-              ),
-            ),
-          ),
-        ],
       ),
       body: savedChoices.isEmpty
           ? Center(child: Text('No saved choices available.'))
@@ -396,9 +266,9 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
         itemCount: savedChoices.length,
         itemBuilder: (context, index) {
           final choice = savedChoices[index];
+          // Validate the audio path (it should be non-null, not empty, and not just whitespace)
           String? audioPath = choice['audioPath'];
-          bool isAudioValid =
-              audioPath != null && audioPath.trim().isNotEmpty;
+          bool isAudioValid = audioPath != null && audioPath.trim().isNotEmpty;
 
           return Card(
             margin: EdgeInsets.all(10),
@@ -439,7 +309,6 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
               ),
             ),
           );
-
         },
       ),
     );
