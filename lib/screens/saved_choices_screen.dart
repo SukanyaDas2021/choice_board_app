@@ -373,7 +373,16 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Saved Choices'),
+        centerTitle: true,
+        title: Text('Saved Choices',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.indigo[900],
+          ),
+          textAlign: TextAlign.center,
+        ),
+        elevation: 10,
+        shadowColor: Colors.purpleAccent,
         backgroundColor: Colors.indigo[100],
         actions: [
           TextButton(
@@ -401,7 +410,8 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
               audioPath != null && audioPath.trim().isNotEmpty;
 
           return Card(
-            margin: EdgeInsets.all(10),
+            elevation: 3,
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16), //EdgeInsets.all(10),
             child: ListTile(
               leading: choice['imagePath'] != null
                   ? Image.file(
