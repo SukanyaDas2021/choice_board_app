@@ -5,7 +5,7 @@ import 'dart:io';
 import '../models/choice_board.dart';
 import 'create_choice_board_screen.dart';
 import 'choice_board_detail_screen.dart';
-//import 'saved_choices_screen.dart'; // Make sure you import the screen for saved choices
+import 'saved_choices_screen.dart'; // Make sure you import the screen for saved choices
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -178,6 +178,21 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // View Saved Choices Button
+            FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SavedChoicesScreen(),
+                  ),
+                );
+              },
+              child: Icon(Icons.visibility, size: 30),
+              tooltip: 'View Saved Choices',
+              backgroundColor: Colors.indigo[100],
+            ),
+            SizedBox(width: 16), // Add space between buttons
             // Create New Choice Board Button
             FloatingActionButton(
               onPressed: () async {
@@ -200,6 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+
     );
   }
 }

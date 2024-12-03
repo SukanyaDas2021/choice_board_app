@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class CreateChoiceBoardScreen extends StatefulWidget {
   final ChoiceBoard? initialChoiceBoard;
@@ -183,6 +185,54 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
     );
   }
 
+  void _showSaveChoiceConfirmationDialog(int index) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirm Save'),
+          content: Text('Do you want to save this choice?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false); // Don't save
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, true); // Save the choice
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      _saveChoice(index); // Save the choice if confirmed
+    }
+  }
+
+  void _saveChoice(int index) async {
+    Choice choice = _choices[index];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    Map<String, dynamic> choiceData = {
+      'text': choice.text,
+      'imagePath': choice.imagePath,
+      'audioPath': choice.audioPath,
+    };
+
+    List<String>? savedChoices = prefs.getStringList('savedChoices');
+    savedChoices = savedChoices ?? [];
+    savedChoices.add(jsonEncode(choiceData));
+    await prefs.setStringList('savedChoices', savedChoices);
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -247,6 +297,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Add Save Choice button and confirmation dialog in the ListView.builder
                           Expanded(
                             flex: 2,
                             child: Column(
@@ -279,9 +330,15 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                                     ),
                                   ],
                                 ),
+                                // Save Choice Button
+                                ElevatedButton(
+                                  onPressed: () => _showSaveChoiceConfirmationDialog(index),
+                                  child: Text('Save Choice'),
+                                ),
                               ],
                             ),
                           ),
+
                           SizedBox(width: 16.0),
                           Expanded(
                             flex: 3,
@@ -308,6 +365,8 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                             icon: Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _deleteChoice(index),
                           ),
+
+
                         ],
                       ),
                     ),
