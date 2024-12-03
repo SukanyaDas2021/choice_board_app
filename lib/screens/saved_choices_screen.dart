@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,7 +20,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
   @override
   void initState() {
     super.initState();
-    loadSavedChoices();
+    loadSavedChoices(); // Call async function in initState
 
     // Listen to audio player state changes
     _audioPlayer.playerStateStream.listen((playerState) {
@@ -31,6 +33,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
     });
   }
 
+  // Mark this function as async since it uses await
   Future<void> loadSavedChoices() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? savedChoicesJson = prefs.getStringList('savedChoices');
@@ -58,6 +61,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
     });
   }
 
+  // Mark this function as async since it uses await
   Future<void> _deleteChoice(int index) async {
     bool? deleteConfirmed = await showDialog<bool>(
       context: context,
@@ -93,6 +97,154 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
       savedChoices.map((choice) => jsonEncode(choice)).toList();
       await prefs.setStringList('savedChoices', updatedChoicesJson);
     }
+  }
+
+  Future<void> _editChoice(int index) async {
+    final choice = savedChoices[index];
+    String? updatedText = choice['text'];
+    String? updatedImagePath = choice['imagePath'];
+    String? updatedAudioPath = choice['audioPath'];
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Edit Choice'),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Text field for editing text
+                    TextField(
+                      controller: TextEditingController(text: updatedText),
+                      decoration: InputDecoration(labelText: 'Text'),
+                      onChanged: (value) {
+                        updatedText = value;
+                      },
+                    ),
+                    SizedBox(height: 20),
+
+                    // Display image or choose image button
+                    updatedImagePath != null
+                        ? Column(
+                      children: [
+                        Image.file(File(updatedImagePath!), height: 100, width: 100),
+                        TextButton.icon(
+                          onPressed: () async {
+                            final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+                            if (pickedFile != null) {
+                              setState(() {
+                                updatedImagePath = pickedFile.path;
+                              });
+                            }
+                          },
+                          icon: Icon(Icons.edit),
+                          label: Text('Change Image'),
+                        ),
+                      ],
+                    )
+                        : TextButton.icon(
+                      onPressed: () async {
+                        final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+                        if (pickedFile != null) {
+                          setState(() {
+                            updatedImagePath = pickedFile.path;
+                          });
+                        }
+                      },
+                      icon: Icon(Icons.add_a_photo),
+                      label: Text('Choose Image'),
+                    ),
+                    SizedBox(height: 20),
+
+                    // Audio controls
+                    updatedAudioPath != null && updatedAudioPath!.trim().isNotEmpty
+                        ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.play_arrow),
+                          onPressed: () async {
+                            await _audioPlayer.setFilePath(updatedAudioPath!);
+                            await _audioPlayer.play();
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () async {
+                            final pickedAudio = await FilePicker.platform.pickFiles(type: FileType.audio);
+                            if (pickedAudio != null) {
+                              setState(() {
+                                updatedAudioPath = pickedAudio.files.single.path!;
+                              });
+                            }
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            setState(() {
+                              updatedAudioPath = null;
+                            });
+                          },
+                        ),
+                      ],
+                    )
+                        : TextButton.icon(
+                      onPressed: () async {
+                        final pickedAudio = await FilePicker.platform.pickFiles(type: FileType.audio);
+                        if (pickedAudio != null) {
+                          setState(() {
+                            updatedAudioPath = pickedAudio.files.single.path!;
+                          });
+                        }
+                      },
+                      icon: Icon(Icons.audiotrack),
+                      label: Text('Add Audio'),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Save changes to the choice
+                    setState(() {
+                      savedChoices[index] = {
+                        'text': updatedText,
+                        'imagePath': updatedImagePath,
+                        'audioPath': updatedAudioPath,
+                      };
+                    });
+
+                    _updateChoicesInPrefs(); // Persist changes
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    // Force screen rebuild by calling setState after dialog closes
+    setState(() {});
+  }
+
+  Future<void> _updateChoicesInPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> updatedChoicesJson = savedChoices.map((choice) => jsonEncode(choice)).toList();
+    await prefs.setStringList('savedChoices', updatedChoicesJson);
   }
 
   @override
@@ -142,9 +294,18 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                 ],
               )
                   : null,
-              trailing: IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () => _deleteChoice(index),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () => _editChoice(index),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () => _deleteChoice(index),
+                  ),
+                ],
               ),
             ),
           );
