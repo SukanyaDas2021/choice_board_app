@@ -25,13 +25,15 @@ class Choice {
   String imagePath;
   String audioPath;
   String text;
+  bool saved;
 
-  Choice({this.imagePath = '', this.audioPath = '', this.text = ''});
+  Choice({this.imagePath = '', this.audioPath = '', this.text = '', this.saved = false});
 
   Map<String, dynamic> toJson() => {
     'imagePath': imagePath,
     'audioPath': audioPath,
     'text': text,
+    'saved': saved,
   };
 
   factory Choice.fromJson(Map<String, dynamic> json) {
@@ -39,6 +41,17 @@ class Choice {
       imagePath: json['imagePath'],
       audioPath: json['audioPath'],
       text: json['text'],
+      saved: json['saved'],
     );
   }
+
+  Choice copyWith({String? imagePath, String? audioPath, String? text, bool? saved}) {
+    return Choice(
+      imagePath: imagePath ?? this.imagePath,
+      audioPath: audioPath ?? this.audioPath,
+      text: text ?? this.text,
+      saved: saved ?? this.saved,
+    );
+  }
+
 }

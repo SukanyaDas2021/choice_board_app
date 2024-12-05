@@ -11,12 +11,10 @@ class CreateChoiceBoardScreen extends StatefulWidget {
   final ChoiceBoard? initialChoiceBoard;
   final ValueChanged<ChoiceBoard> onSave;
 
-
   CreateChoiceBoardScreen({this.initialChoiceBoard, required this.onSave});
 
   @override
-  _CreateChoiceBoardScreenState createState() =>
-      _CreateChoiceBoardScreenState();
+  _CreateChoiceBoardScreenState createState() => _CreateChoiceBoardScreenState();
 }
 
 class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
@@ -26,19 +24,14 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
   late AudioPlayer _audioPlayer;
   bool isPlaying = false;
   String? _boardImagePath; // Variable to hold the board image path
-  bool showSaveButton = false; // Flag to show "Save Choice" button for the newly added choice
 
   @override
   void initState() {
     super.initState();
-    _nameController =
-        TextEditingController(text: widget.initialChoiceBoard?.name ?? '');
+    _nameController = TextEditingController(text: widget.initialChoiceBoard?.name ?? '');
     _choices = widget.initialChoiceBoard?.choices ?? [];
-    _choiceControllers = _choices
-        .map((choice) => TextEditingController(text: choice.text))
-        .toList();
-    _boardImagePath = widget.initialChoiceBoard
-        ?.imagePath; // Initialize board image path if provided
+    _choiceControllers = _choices.map((choice) => TextEditingController(text: choice.text)).toList();
+    _boardImagePath = widget.initialChoiceBoard?.imagePath; // Initialize board image path if provided
     _audioPlayer = AudioPlayer();
   }
 
@@ -79,8 +72,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
   }
 
   Future<void> _pickAudio(int index) async {
-    FilePickerResult? result =
-        await FilePicker.platform.pickFiles(type: FileType.audio);
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
 
     if (result != null && result.files.single.path != null) {
       String audioPath = result.files.single.path!;
@@ -155,13 +147,10 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
 
   void _saveChoiceBoard() {
     bool hasValidChoices = _choices.length >= 2 &&
-        _choices
-                .where((choice) =>
-                    choice.imagePath.isNotEmpty ||
-                    choice.text.trim().isNotEmpty &&
-                        choice.text.trim() != 'text')
-                .length >=
-            2;
+        _choices.where((choice) =>
+        choice.imagePath.isNotEmpty ||
+            choice.text.trim().isNotEmpty &&
+                choice.text.trim() != 'text').length >= 2;
 
     if (_nameController.text.isEmpty || !hasValidChoices) {
       _showErrorDialog();
@@ -182,8 +171,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
       builder: (context) {
         return AlertDialog(
           title: Text('Error'),
-          content: Text(
-              'The choice board must have at least two valid choices with image or text content or both (audio is optional).'),
+          content: Text('The choice board must have at least two valid choices with image or text content or both (audio is optional).'),
           actions: [
             TextButton(
               onPressed: () {
@@ -198,58 +186,54 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
   }
 
   void _showSaveChoiceConfirmationDialog(int index) async {
-    showDialog(
+    final result = await showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
-          title: Text("Save Choice?"),
-          content: Text("Do you want to save this choice?"),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () async {
-                // Mark choice as saved
-                if (_choices[index].text.trim().isEmpty) {
-                  // Show error message if the text is empty
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: A choice must have text to be saved!')),
-                  );
-                  return;
-                }
-                setState(() {
-                  _choices[index] = _choices[index].copyWith(saved: true);
-                  showSaveButton = false;
-                });
-
-                // Save the choice to SharedPreferences
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                List<String> savedChoicesJson = prefs.getStringList('savedChoices') ?? [];
-
-                // Add the current choice to the saved choices list
-                savedChoicesJson.add(jsonEncode(_choices[index].toJson()));
-
-                // Save the updated list back to SharedPreferences
-                await prefs.setStringList('savedChoices', savedChoicesJson);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Choice saved for future use!')),
-                );
-
-                Navigator.of(context).pop();
-              },
-              child: Text("Yes"),
-            ),
+          title: Text('Confirm Save'),
+          content: Text('Do you want to save this choice?'),
+          actions: [
             TextButton(
               onPressed: () {
-                showSaveButton = true;
-                Navigator.of(context).pop();
+                Navigator.pop(context, false); // Don't save
               },
-              child: Text("No"),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, true); // Save the choice
+              },
+              child: Text('Save'),
             ),
           ],
         );
       },
     );
+
+    if (result == true) {
+      _saveChoice(index); // Save the choice if confirmed
+    }
   }
 
+  void _saveChoice(int index) async {
+    Choice choice = _choices[index];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    Map<String, dynamic> choiceData = {
+      'text': choice.text,
+      'imagePath': choice.imagePath,
+      'audioPath': choice.audioPath,
+    };
+
+    List<String>? savedChoices = prefs.getStringList('savedChoices');
+    savedChoices = savedChoices ?? [];
+    savedChoices.add(jsonEncode(choiceData));
+    await prefs.setStringList('savedChoices', savedChoices);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Choice saved for future use!')),
+    );
+  }
 
   // Function to pick saved choices from SharedPreferences
   Future<void> _pickSavedChoice() async {
@@ -263,62 +247,18 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
         return SimpleDialog(
           title: Text('Select a saved choice'),
           children: savedChoices?.map((choiceData) {
-            if (choiceData == null || choiceData.isEmpty) {
-              return Container(); // Skip empty or null choiceData
-            }
-
-            try {
-              Map<String, dynamic> decodedChoice = jsonDecode(choiceData);
-              Choice choice = Choice(
-                text: decodedChoice['text'] ?? '',
-                imagePath: decodedChoice['imagePath'] ?? '',
-                audioPath: decodedChoice['audioPath'] ?? '',
-              );
-
-              return SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context, choice);
-                },
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Display Image if available
-                    choice.imagePath.isNotEmpty
-                        ? Image.file(
-                      File(choice.imagePath),
-                      height: 50,
-                      width: 50,
-                      fit: BoxFit.cover,
-                    )
-                        : SizedBox(width: 50, height: 50), // Placeholder for alignment
-                    SizedBox(width: 10), // Spacing between elements
-
-                    // Display Text
-                    Expanded(
-                      child: Text(
-                        choice.text,
-                        style: TextStyle(fontSize: 16),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-
-                    SizedBox(width: 10), // Spacing between elements
-
-                    // Display Audio Play button if audio exists
-                    choice.audioPath.isNotEmpty
-                        ? IconButton(
-                      icon: Icon(Icons.play_arrow),
-                      onPressed: () => _playPauseAudio(choice.audioPath),
-                    )
-                        : Container(), // Empty container if no audio
-                  ],
-                ),
-              );
-            } catch (e) {
-              // If decoding fails, return an empty container (skip this choice)
-              return Container();
-            }
+            Map<String, dynamic> decodedChoice = jsonDecode(choiceData);
+            Choice choice = Choice(
+              text: decodedChoice['text'],
+              imagePath: decodedChoice['imagePath'],
+              audioPath: decodedChoice['audioPath'],
+            );
+            return SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, choice);
+              },
+              child: Text(choice.text),
+            );
           }).toList(),
         );
       },
@@ -326,17 +266,12 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
 
     if (selectedChoice != null) {
       setState(() {
-        // Check if the selected choice already exists
-        bool isChoiceExist =
-        _choices.any((choice) => choice.text == selectedChoice.text);
-        if (!isChoiceExist) {
-          _choices.add(selectedChoice);
-          _choiceControllers
-              .add(TextEditingController(text: selectedChoice.text));
-        }
+        _choices.add(selectedChoice);
+        _choiceControllers.add(TextEditingController(text: selectedChoice.text));
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -374,32 +309,31 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _pickBoardImage,
-                child: _boardImagePath == null
-                    ? Icon(Icons.add_photo_alternate, size: 100)
-                    : Image.file(File(_boardImagePath!), height: 100, width: 100),
-              ),
-              SizedBox(height: 8.0),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Board Name'),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: _pickBoardImage,
+              child: _boardImagePath == null
+                  ? Icon(Icons.add_photo_alternate, size: 100)
+                  : Image.file(File(_boardImagePath!), height: 100, width: 100),
+            ),
+            SizedBox(height: 8.0),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Board Name'),
+            ),
+            ElevatedButton(
+              onPressed: _pickSavedChoice,
+              child: Text('Select from Saved'),
+            ),
+            Expanded(
+              child: ListView.builder(
                 itemCount: _choices.length,
                 itemBuilder: (context, index) {
                   final choice = _choices[index];
                   TextEditingController controller = _choiceControllers[index];
-                  //showSaveButton = widget.initialChoiceBoard == null ? true : false;
-                  // Determine if the choice is newly added
-                  bool isNewChoice = widget.initialChoiceBoard == null && choice.saved;
 
                   return Card(
                     child: Padding(
@@ -407,6 +341,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Add Save Choice button and confirmation dialog in the ListView.builder
                           Expanded(
                             flex: 2,
                             child: Column(
@@ -418,7 +353,6 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                                       : Image.file(File(choice.imagePath), height: 100, width: 100),
                                 ),
                                 SizedBox(height: 8.0),
-
                                 choice.audioPath.isEmpty
                                     ? TextButton(
                                   onPressed: () => _pickAudio(index),
@@ -440,16 +374,15 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                                     ),
                                   ],
                                 ),
-                                // Show 'Save Choice' button only for newly added choices
-                                !choice.saved && showSaveButton //&& isNewChoice
-                                    ? ElevatedButton(
+                                // Save Choice Button
+                                ElevatedButton(
                                   onPressed: () => _showSaveChoiceConfirmationDialog(index),
                                   child: Text('Save Choice'),
-                                )
-                                    : Container(), // Hide for existing choices
+                                ),
                               ],
                             ),
                           ),
+
                           SizedBox(width: 16.0),
                           Expanded(
                             flex: 3,
@@ -476,37 +409,27 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                             icon: Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _deleteChoice(index),
                           ),
+
+
                         ],
                       ),
                     ),
                   );
                 },
               ),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: _pickSavedChoice,
-                    child: Text('Select from Saved Choice'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _choices.add(Choice(imagePath: '', audioPath: '', text: '', saved: false));
-                        _choiceControllers.add(TextEditingController(text: ''));
-                        showSaveButton = true;
-                      });
-                    },
-                    child: Text('Add New Choice'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _choices.add(Choice(imagePath: '', audioPath: '', text: ''));
+                  _choiceControllers.add(TextEditingController(text: ''));
+                });
+              },
+              child: Text('Add Choice'),
+            ),
+          ],
         ),
       ),
     );
   }
-
 }
