@@ -14,11 +14,13 @@ class ChoiceBoardDetailScreen extends StatefulWidget {
 
 class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
   late AudioPlayer _audioPlayer;
+  late List<Choice> choices;
 
   @override
   void initState() {
     super.initState();
     _audioPlayer = AudioPlayer();
+    choices = List.from(widget.choiceBoard.choices);
   }
 
   @override
@@ -52,7 +54,8 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
                 ),
               ),
             ),
-            if (widget.choiceBoard.imagePath != null && widget.choiceBoard.imagePath!.isNotEmpty)
+            if (widget.choiceBoard.imagePath != null &&
+                widget.choiceBoard.imagePath!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Image.file(
@@ -69,7 +72,7 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
           final screenHeight = constraints.maxHeight;
-          final itemCount = widget.choiceBoard.choices.length;
+          final itemCount = choices.length;
 
           // Determine the number of columns
           int crossAxisCount;
@@ -88,7 +91,8 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
           final padding = screenWidth * 0.02; // 2% of screen width
 
           // Adjust childAspectRatio to fit all items within the screen height
-          final childAspectRatio = (screenWidth / crossAxisCount) / (screenHeight / ((itemCount / crossAxisCount).ceil()));
+          final childAspectRatio = (screenWidth / crossAxisCount) /
+              (screenHeight / ((itemCount / crossAxisCount).ceil()));
 
           return GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -98,43 +102,93 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
               crossAxisSpacing: crossAxisSpacing,
             ),
             padding: EdgeInsets.all(padding),
-            itemCount: widget.choiceBoard.choices.length,
+            itemCount: choices.length,
             itemBuilder: (context, index) {
-              final choice = widget.choiceBoard.choices[index];
-              return GestureDetector(
-                onTap: () {
-                  if (choice.audioPath.isNotEmpty) {
-                    _playAudio(choice.audioPath);
-                  }
+              final choice = choices[index];
+              return DragTarget<int>(
+                onWillAccept: (data) => true,
+                onAccept: (data) {
+                  setState(() {
+                    final draggedChoice = choices.removeAt(data);
+                    choices.insert(index, draggedChoice);
+                  });
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 2.0), // Black border with width of 2.0
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: choice.imagePath.isNotEmpty
-                            ? Image.file(
-                          File(choice.imagePath),
-                          width: double.infinity, // Fit the width of the container
-                          height: double.infinity, // Fit the height of the container
-                          fit: BoxFit.contain, // Ensure the whole image is displayed
-                        )
-                            : Icon(Icons.image, size: 50), // Set a default size if no image
+                builder: (context, candidateData, rejectedData) {
+                  return Draggable<int>(
+                    data: index,
+                    feedback: Material(
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        color: Colors.blue.withOpacity(0.5),
+                        child: Center(child: Text(choice.text)),
                       ),
-                      SizedBox(height: 8.0),
-                      Text(
-                        choice.text,
-                        style: TextStyle(
-                          fontSize: 18, // Increase the font size
-                          fontWeight: FontWeight.bold, // Make the text bold
+                    ),
+                    childWhenDragging: Container(
+                      color: Colors.grey.withOpacity(0.3),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (choice.imagePath.isNotEmpty)
+                            Image.file(
+                              File(choice.imagePath),
+                              width: double.infinity,
+                              // Fit the width of the container
+                              height: double.infinity,
+                              // Fit the height of the container
+                              fit: BoxFit
+                                  .contain, // Ensure the whole image is displayed
+                            )
+                          else
+                            Icon(Icons.image, size: 50),
+                          SizedBox(height: 8.0),
+                          Text(
+                            choice.text,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (choice.audioPath.isNotEmpty) {
+                          _playAudio(choice.audioPath);
+                        }
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black, width: 2.0),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: choice.imagePath.isNotEmpty
+                                  ? Image.file(
+                                File(choice.imagePath),
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.contain,
+                              )
+                                  : Icon(Icons.image, size: 50),
+                            ),
+                            SizedBox(height: 8.0),
+                            Text(
+                              choice.text,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           );
