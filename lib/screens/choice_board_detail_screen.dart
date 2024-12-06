@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/choice_board.dart';
 import 'package:just_audio/just_audio.dart';
 import 'dart:io';
+import 'package:reorderable_grid/reorderable_grid.dart';
 
 class ChoiceBoardDetailScreen extends StatefulWidget {
   final ChoiceBoard choiceBoard;
@@ -36,6 +37,13 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
     } catch (e) {
       print("Error playing audio: $e");
     }
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    setState(() {
+      final item = choices.removeAt(oldIndex);
+      choices.insert(newIndex, item);
+    });
   }
 
   @override
@@ -74,27 +82,24 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
           final screenHeight = constraints.maxHeight;
           final itemCount = choices.length;
 
-          // Determine the number of columns
+          // Determine the number of columns dynamically
           int crossAxisCount;
-
           if (itemCount == 3) {
-            crossAxisCount = 3; // 3 items in a single row
+            crossAxisCount = 3;
           } else if (itemCount <= 4) {
-            crossAxisCount = 2; // 2 items per row if 4 or fewer items
+            crossAxisCount = 2;
           } else {
-            crossAxisCount = 3; // Default to 3 columns
+            crossAxisCount = 3;
           }
 
-          // Calculate dynamic spacing based on screen width
-          final mainAxisSpacing = screenWidth * 0.02; // 2% of screen width
-          final crossAxisSpacing = screenWidth * 0.02; // 2% of screen width
-          final padding = screenWidth * 0.02; // 2% of screen width
+          final mainAxisSpacing = screenWidth * 0.02;
+          final crossAxisSpacing = screenWidth * 0.02;
+          final padding = screenWidth * 0.02;
 
-          // Adjust childAspectRatio to fit all items within the screen height
           final childAspectRatio = (screenWidth / crossAxisCount) /
               (screenHeight / ((itemCount / crossAxisCount).ceil()));
 
-          return GridView.builder(
+          return ReorderableGridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               childAspectRatio: childAspectRatio,
@@ -103,92 +108,46 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
             ),
             padding: EdgeInsets.all(padding),
             itemCount: choices.length,
+            onReorder: _onReorder,
             itemBuilder: (context, index) {
               final choice = choices[index];
-              return DragTarget<int>(
-                onWillAccept: (data) => true,
-                onAccept: (data) {
-                  setState(() {
-                    final draggedChoice = choices.removeAt(data);
-                    choices.insert(index, draggedChoice);
-                  });
-                },
-                builder: (context, candidateData, rejectedData) {
-                  return Draggable<int>(
-                    data: index,
-                    feedback: Material(
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        color: Colors.blue.withOpacity(0.5),
-                        child: Center(child: Text(choice.text)),
-                      ),
+              return Card(
+                key: ValueKey(choice),
+                child: GestureDetector(
+                  onTap: () {
+                    if (choice.audioPath.isNotEmpty) {
+                      _playAudio(choice.audioPath);
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black, width: 2.0),
                     ),
-                    childWhenDragging: Container(
-                      color: Colors.grey.withOpacity(0.3),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (choice.imagePath.isNotEmpty)
-                            Image.file(
-                              File(choice.imagePath),
-                              width: double.infinity,
-                              // Fit the width of the container
-                              height: double.infinity,
-                              // Fit the height of the container
-                              fit: BoxFit
-                                  .contain, // Ensure the whole image is displayed
-                            )
-                          else
-                            Icon(Icons.image, size: 50),
-                          SizedBox(height: 8.0),
-                          Text(
-                            choice.text,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: choice.imagePath.isNotEmpty
+                              ? Image.file(
+                            File(choice.imagePath),
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.contain,
+                          )
+                              : Icon(Icons.image, size: 50),
+                        ),
+                        SizedBox(height: 8.0),
+                        Text(
+                          choice.text,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
-                      ),
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        if (choice.audioPath.isNotEmpty) {
-                          _playAudio(choice.audioPath);
-                        }
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black, width: 2.0),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: choice.imagePath.isNotEmpty
-                                  ? Image.file(
-                                File(choice.imagePath),
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.contain,
-                              )
-                                  : Icon(Icons.image, size: 50),
-                            ),
-                            SizedBox(height: 8.0),
-                            Text(
-                              choice.text,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             },
           );

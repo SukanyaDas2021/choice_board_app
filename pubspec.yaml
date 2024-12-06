@@ -41,6 +41,7 @@ dependencies:
   file_picker: ^8.0.5
   just_audio: ^0.9.39
   flutter_launcher_icons: ^0.13.1
+  reorderable_grid: ^1.0.10
 
 
 dev_dependencies:

@@ -101,6 +101,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
     String? updatedText = choice['text'];
     String? updatedImagePath = choice['imagePath'];
     String? updatedAudioPath = choice['audioPath'];
+    bool? updatedSaved = choice['saved'];
 
     await showDialog(
       context: context,
@@ -119,6 +120,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                       decoration: InputDecoration(labelText: 'Text'),
                       onChanged: (value) {
                         updatedText = value;
+                        updatedSaved = false;
                       },
                     ),
                     SizedBox(height: 20),
@@ -134,6 +136,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                             if (pickedFile != null) {
                               setState(() {
                                 updatedImagePath = pickedFile.path;
+                                updatedSaved = false;
                               });
                             }
                           },
@@ -175,6 +178,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                             if (pickedAudio != null) {
                               setState(() {
                                 updatedAudioPath = pickedAudio.files.single.path!;
+                                updatedSaved = false;
                               });
                             }
                           },
@@ -219,6 +223,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                         'text': updatedText,
                         'imagePath': updatedImagePath,
                         'audioPath': updatedAudioPath,
+                        'saved': updatedSaved,
                       };
                     });
 
@@ -333,6 +338,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                           'text': newText,
                           'imagePath': newImagePath,
                           'audioPath': newAudioPath,
+                          'saved': true,
                         });
                       });
 
@@ -388,12 +394,12 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
           TextButton(
             onPressed: _addNewChoice,
             child: Text(
-              'New Choice',
+              '+',
               style: TextStyle(
                 color: Colors.indigo[800], // Matches the AppBar text color
                 fontWeight: FontWeight.bold,
                 backgroundColor: Colors.lightBlue[100],
-                fontSize: 20,
+                fontSize: 30,
               ),
             ),
           ),
@@ -405,7 +411,10 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
         itemCount: savedChoices.length,
         itemBuilder: (context, index) {
           final choice = savedChoices[index];
+          String? imagePath = choice['imagePath'];
           String? audioPath = choice['audioPath'];
+          bool isImageValid =
+              imagePath != null && imagePath.trim().isNotEmpty;
           bool isAudioValid =
               audioPath != null && audioPath.trim().isNotEmpty;
 
@@ -413,9 +422,9 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
             elevation: 3,
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16), //EdgeInsets.all(10),
             child: ListTile(
-              leading: choice['imagePath'] != null
+              leading: isImageValid
                   ? Image.file(
-                File(choice['imagePath']),
+                File(imagePath),
                 width: 50,
                 height: 50,
                 fit: BoxFit.cover,
