@@ -255,7 +255,15 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Create New Choice'),
+              title: Text(
+                'Create New Choice',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.deepPurple,
+                ),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,7 +388,8 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Saved Choices',
+        title: Text(
+          'Saved Choices',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.indigo[900],
@@ -391,16 +400,36 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
         shadowColor: Colors.purpleAccent,
         backgroundColor: Colors.indigo[100],
         actions: [
-          TextButton(
-            onPressed: _addNewChoice,
-            child: Text(
-              '+',
-              style: TextStyle(
-                color: Colors.indigo[800], // Matches the AppBar text color
-                fontWeight: FontWeight.bold,
-                backgroundColor: Colors.lightBlue[100],
-                fontSize: 30,
+          Padding(
+            padding: const EdgeInsets.only(right: 16), // Add padding for a clean look
+            child: Tooltip(
+              message: 'Add new choice',
+              child: InkWell(
+              onTap: _addNewChoice, // Handle button press
+              borderRadius: BorderRadius.circular(50), // Circular tap effect
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.purple[100], //lightBlue[100], // Background color
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.purpleAccent.withOpacity(0.4), // Shadow effect
+                      blurRadius: 8,
+                      offset: Offset(2, 2), // Shadow position
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Text(
+                  '+',
+                  style: TextStyle(
+                    color: Colors.indigo[800],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                  ),
+                ),
               ),
+            ),
             ),
           ),
         ],

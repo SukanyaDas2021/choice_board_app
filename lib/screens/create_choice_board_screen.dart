@@ -261,7 +261,15 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
       context: context,
       builder: (context) {
         return SimpleDialog(
-          title: Text('Select a saved choice'),
+          title: Text(
+            'Select from Saved Choice',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.deepPurple,
+            ),
+           ),
           children: savedChoices?.map((choiceData) {
             if (choiceData == null || choiceData.isEmpty) {
               return Container(); // Skip empty or null choiceData
