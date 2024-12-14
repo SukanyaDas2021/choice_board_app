@@ -103,7 +103,115 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         elevation: 10,
         shadowColor: Colors.purpleAccent,
-        backgroundColor: Colors.indigo[100],
+        backgroundColor: Colors.transparent, // Set to transparent for gradient
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue[100]!, Colors.indigo[400]!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        actions: [
+          // View Saved Choices Button
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Tooltip(
+              message: 'View Saved Choices',
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SavedChoicesScreen(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple[100],
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purpleAccent.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility, size: 24, color: Colors.indigo[800]),
+                      const SizedBox(width: 4),
+                      Text(
+                        'View',
+                        style: TextStyle(
+                          color: Colors.indigo[800],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Create New Choice Board Button
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Tooltip(
+              message: 'Add New Choice',
+              child: InkWell(
+                onTap: () async {
+                  final ChoiceBoard? newBoard = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreateChoiceBoardScreen(
+                        onSave: saveChoiceBoard,
+                      ),
+                    ),
+                  );
+                  if (newBoard != null) {
+                    saveChoiceBoard(newBoard);
+                  }
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple[100],
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purpleAccent.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, size: 24, color: Colors.indigo[800]),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Add',
+                        style: TextStyle(
+                          color: Colors.indigo[800],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: choiceBoards.isEmpty
           ? Center(child: Text('No choice boards created yet.'))
@@ -115,8 +223,10 @@ class _HomeScreenState extends State<HomeScreen> {
             elevation: 3,
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(
-              contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-              leading: choiceBoard.imagePath != null && choiceBoard.imagePath!.isNotEmpty
+              contentPadding:
+              EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              leading: choiceBoard.imagePath != null &&
+                  choiceBoard.imagePath!.isNotEmpty
                   ? Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: Image.file(
@@ -129,7 +239,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   : null, // Show leading image if available, otherwise null
               title: Text(
                 choiceBoard.name,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -137,13 +248,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   IconButton(
                     icon: Icon(Icons.edit, color: Colors.indigo),
                     onPressed: () async {
-                      final ChoiceBoard? updatedBoard = await Navigator.push(
+                      final ChoiceBoard? updatedBoard =
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CreateChoiceBoardScreen(
-                            onSave: (choiceBoard) => updateChoiceBoard(index, choiceBoard),
-                            initialChoiceBoard: choiceBoards[index],
-                          ),
+                          builder: (context) =>
+                              CreateChoiceBoardScreen(
+                                onSave: (choiceBoard) =>
+                                    updateChoiceBoard(
+                                        index, choiceBoard),
+                                initialChoiceBoard: choiceBoards[index],
+                              ),
                         ),
                       );
                       if (updatedBoard != null) {
@@ -173,48 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-      floatingActionButton: Container(
-        alignment: Alignment.bottomCenter,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // View Saved Choices Button
-            FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SavedChoicesScreen(),
-                  ),
-                );
-              },
-              child: Icon(Icons.visibility, size: 30),
-              tooltip: 'View Saved Choices',
-              backgroundColor: Colors.indigo[100],
-            ),
-            SizedBox(width: 16), // Add space between buttons
-            // Create New Choice Board Button
-            FloatingActionButton(
-              onPressed: () async {
-                final ChoiceBoard? newBoard = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CreateChoiceBoardScreen(
-                      onSave: saveChoiceBoard,
-                    ),
-                  ),
-                );
-                if (newBoard != null) {
-                  saveChoiceBoard(newBoard);
-                }
-              },
-              child: Icon(Icons.add, size: 30),
-              tooltip: 'Create New Choice Board',
-              backgroundColor: Colors.indigo[100],
-            ),
-          ],
-        ),
-      ),
     );
   }
+
 }

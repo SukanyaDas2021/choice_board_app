@@ -398,38 +398,53 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
         ),
         elevation: 10,
         shadowColor: Colors.purpleAccent,
-        backgroundColor: Colors.indigo[100],
+        backgroundColor: Colors.transparent, // Set to transparent for gradient
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue[100]!, Colors.indigo[400]!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16), // Add padding for a clean look
+            padding: const EdgeInsets.only(right: 16),
             child: Tooltip(
               message: 'Add new choice',
               child: InkWell(
-              onTap: _addNewChoice, // Handle button press
-              borderRadius: BorderRadius.circular(50), // Circular tap effect
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.purple[100], //lightBlue[100], // Background color
-                  borderRadius: BorderRadius.circular(8), // Rounded corners
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.purpleAccent.withOpacity(0.4), // Shadow effect
-                      blurRadius: 8,
-                      offset: Offset(2, 2), // Shadow position
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Text(
-                  '+',
-                  style: TextStyle(
-                    color: Colors.indigo[800],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
+                onTap: _addNewChoice,
+                borderRadius: BorderRadius.circular(50),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple[100],
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purpleAccent.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, size: 24, color: Colors.indigo[800]),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Add',
+                        style: TextStyle(
+                          color: Colors.indigo[800],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
             ),
           ),
         ],
