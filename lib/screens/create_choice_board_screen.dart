@@ -216,8 +216,8 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                   return;
                 }
                 setState(() {
+                  _choices[index].saved = true;
                   _choices[index] = _choices[index].copyWith(saved: true);
-                  showSaveButton = false;
                 });
 
                 // Save the choice to SharedPreferences
@@ -239,7 +239,6 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
             ),
             TextButton(
               onPressed: () {
-                showSaveButton = true;
                 Navigator.of(context).pop();
               },
               child: Text("No"),
@@ -281,10 +280,12 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                 text: decodedChoice['text'] ?? '',
                 imagePath: decodedChoice['imagePath'] ?? '',
                 audioPath: decodedChoice['audioPath'] ?? '',
+                saved: decodedChoice['saved'] ?? '',
               );
 
               return SimpleDialogOption(
                 onPressed: () {
+                  choice.saved = true;
                   Navigator.pop(context, choice);
                 },
                 child: Row(
@@ -405,7 +406,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                 itemBuilder: (context, index) {
                   final choice = _choices[index];
                   TextEditingController controller = _choiceControllers[index];
-                  //showSaveButton = widget.initialChoiceBoard == null ? true : false;
+                  showSaveButton = widget.initialChoiceBoard == null ? true : false;
                   // Determine if the choice is newly added
                   bool isNewChoice = widget.initialChoiceBoard == null && choice.saved;
 
@@ -448,13 +449,11 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                                     ),
                                   ],
                                 ),
-                                // Show 'Save Choice' button only for newly added choices
-                                !choice.saved && showSaveButton //&& isNewChoice
-                                    ? ElevatedButton(
-                                  onPressed: () => _showSaveChoiceConfirmationDialog(index),
-                                  child: Text('Save Choice'),
-                                )
-                                    : Container(), // Hide for existing choices
+                                if (!choice.saved)
+                                  ElevatedButton(
+                                    onPressed: () => _showSaveChoiceConfirmationDialog(index),
+                                    child: Text('Save Choice'),
+                                  ), // Hide for existing choices
                               ],
                             ),
                           ),
@@ -473,6 +472,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                                         imagePath: choice.imagePath,
                                         audioPath: choice.audioPath,
                                         text: value,
+                                        saved: choice.saved,
                                       );
                                     });
                                   },
@@ -503,7 +503,7 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                       setState(() {
                         _choices.add(Choice(imagePath: '', audioPath: '', text: '', saved: false));
                         _choiceControllers.add(TextEditingController(text: ''));
-                        showSaveButton = true;
+                        //showSaveButton = true;
                       });
                     },
                     child: Text('Add New Choice'),
