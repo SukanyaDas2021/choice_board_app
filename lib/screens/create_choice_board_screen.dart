@@ -256,6 +256,26 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
     List<String>? savedChoices = prefs.getStringList('savedChoices');
     savedChoices = savedChoices ?? [];
 
+    // Check if there are no saved choices
+    if (savedChoices.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('No Saved Choices'),
+            content: Text('There are no saved choices to select from.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return; // Exit the function early if no saved choices exist
+    }
+
     final selectedChoice = await showDialog<Choice>(
       context: context,
       builder: (context) {

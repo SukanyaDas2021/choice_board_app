@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/choice_details_dialog_widget.dart';
 
 class SavedChoicesScreen extends StatefulWidget {
   @override
@@ -126,7 +127,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                     SizedBox(height: 20),
 
                     // Display image or choose image button
-                    updatedImagePath != null
+                    updatedImagePath != null && File(updatedImagePath!).existsSync()
                         ? Column(
                       children: [
                         Image.file(File(updatedImagePath!), height: 100, width: 100),
@@ -383,6 +384,134 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
     super.dispose();
   }
 
+  void _searchChoice() async {
+    final searchText = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        TextEditingController searchController = TextEditingController();
+        return AlertDialog(
+          title: Text('Search Choice'),
+          content: TextField(
+            controller: searchController,
+            decoration: InputDecoration(
+              hintText: 'Enter choice text',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(null); // Cancel search
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(searchController.text);
+              },
+              child: Text('Search'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (searchText != null && searchText.trim().isNotEmpty) {
+      final foundChoices = savedChoices.where((choice) =>
+      choice['text']?.toLowerCase().contains(searchText.toLowerCase()) ?? false)
+          .toList();
+
+      if (foundChoices.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) =>
+              AlertDialog(
+                title: Text('No Results'),
+                content: Text('No saved choices match your search.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              ),
+        );
+      }
+      else {
+        // Do something with foundChoices (e.g., display them in a new dialog or update UI)
+        showDialog(
+            context: context,
+            builder: (context)
+            {
+              return AlertDialog(
+                title: Text('Search Results'),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: foundChoices.length,
+                    itemBuilder: (context, index) {
+                      final choice = foundChoices[index];
+                      String? imagePath = choice['imagePath'];
+                      String? audioPath = choice['audioPath'];
+                      bool isImageValid =
+                          imagePath != null && imagePath
+                              .trim()
+                              .isNotEmpty;
+                      bool isAudioValid =
+                          audioPath != null && audioPath
+                              .trim()
+                              .isNotEmpty;
+
+                      return ListTile(
+                        leading: isImageValid
+                            ? Image.file(
+                          File(imagePath),
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                            : SizedBox(width: 50, height: 50),
+                        // Placeholder for alignment
+                        title: Text(
+                          choice['text'] ?? 'No Text',
+                          style: TextStyle(fontSize: 16),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        subtitle: isAudioValid
+                            ? IconButton(
+                          icon: Icon(Icons.play_arrow),
+                          onPressed: () => _playPauseAudio(audioPath),
+                        )
+                            : null,
+                        // Empty if no audio
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                      );
+                    },
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Close'),
+                  ),
+                ],
+              );
+            }
+          );
+        }
+      }
+    }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -447,6 +576,17 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Tooltip(
+              message: 'Search choices',
+              child: InkWell(
+                onTap: _searchChoice,
+                borderRadius: BorderRadius.circular(50),
+                child: Icon(Icons.search, size: 28, color: Colors.indigo[800]),
+              ),
+            ),
+          ),
         ],
       ),
       body: savedChoices.isEmpty
@@ -500,9 +640,17 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                   ),
                 ],
               ),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => ChoiceDetailsDialog(
+                    choice: choice,
+                    onClose: () => Navigator.of(context).pop(),
+                  ),
+                );
+              },
             ),
           );
-
         },
       ),
     );
