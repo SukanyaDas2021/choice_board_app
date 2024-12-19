@@ -273,82 +273,100 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
           );
         },
       );
-      return; // Exit the function early if no saved choices exist
+      return;
     }
 
     final selectedChoice = await showDialog<Choice>(
       context: context,
       builder: (context) {
-        return SimpleDialog(
-          title: Text(
-            'Select from Saved Choice',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.deepPurple,
-            ),
-           ),
-          children: savedChoices?.map((choiceData) {
-            if (choiceData == null || choiceData.isEmpty) {
-              return Container(); // Skip empty or null choiceData
-            }
+        String searchQuery = '';
+        List<String> filteredChoices = savedChoices!;
 
-            try {
-              Map<String, dynamic> decodedChoice = jsonDecode(choiceData);
-              Choice choice = Choice(
-                text: decodedChoice['text'] ?? '',
-                imagePath: decodedChoice['imagePath'] ?? '',
-                audioPath: decodedChoice['audioPath'] ?? '',
-                saved: decodedChoice['saved'] ?? '',
-              );
-
-              return SimpleDialogOption(
-                onPressed: () {
-                  choice.saved = true;
-                  Navigator.pop(context, choice);
-                },
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Display Image if available
-                    choice.imagePath.isNotEmpty
-                        ? Image.file(
-                      File(choice.imagePath),
-                      height: 50,
-                      width: 50,
-                      fit: BoxFit.cover,
-                    )
-                        : SizedBox(width: 50, height: 50), // Placeholder for alignment
-                    SizedBox(width: 10), // Spacing between elements
-
-                    // Display Text
-                    Expanded(
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        choice.text,
-                        style: TextStyle(fontSize: 16),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                        'Select from Saved Choices',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.deepPurple),
                       ),
                     ),
+                    // Search Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Search',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value.trim().toLowerCase();
+                            filteredChoices = savedChoices!
+                                .where((choice) => choice.toLowerCase().contains(searchQuery))
+                                .toList();
+                          });
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    // List of Choices
+                    Expanded(
+                      child: ListView(
+                        children: filteredChoices.map((choiceData) {
+                          try {
+                            Map<String, dynamic> decodedChoice = jsonDecode(choiceData);
+                            Choice choice = Choice(
+                              text: decodedChoice['text'] ?? '',
+                              imagePath: decodedChoice['imagePath'] ?? '',
+                              audioPath: decodedChoice['audioPath'] ?? '',
+                              saved: decodedChoice['saved'] ?? '',
+                            );
 
-                    SizedBox(width: 10), // Spacing between elements
-
-                    // Display Audio Play button if audio exists
-                    choice.audioPath.isNotEmpty
-                        ? IconButton(
-                      icon: Icon(Icons.play_arrow),
-                      onPressed: () => _playPauseAudio(choice.audioPath),
-                    )
-                        : Container(), // Empty container if no audio
+                            return ListTile(
+                              leading: choice.imagePath.isNotEmpty
+                                  ? Image.file(File(choice.imagePath), height: 50, width: 50, fit: BoxFit.cover)
+                                  : Icon(Icons.image_not_supported),
+                              title: Text(choice.text, overflow: TextOverflow.ellipsis),
+                              trailing: choice.audioPath.isNotEmpty
+                                  ? IconButton(
+                                icon: Icon(Icons.play_arrow),
+                                onPressed: () => _playPauseAudio(choice.audioPath),
+                              )
+                                  : null,
+                              onTap: () {
+                                choice.saved = true;
+                                Navigator.pop(context, choice);
+                              },
+                            );
+                          } catch (e) {
+                            return Container(); // Skip invalid choice
+                          }
+                        }).toList(),
+                      ),
+                    ),
+                    // Close Button
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text('Close'),
+                      ),
+                    ),
                   ],
                 ),
-              );
-            } catch (e) {
-              // If decoding fails, return an empty container (skip this choice)
-              return Container();
-            }
-          }).toList(),
+              ),
+            );
+          },
         );
       },
     );
@@ -356,12 +374,10 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
     if (selectedChoice != null) {
       setState(() {
         // Check if the selected choice already exists
-        bool isChoiceExist =
-        _choices.any((choice) => choice.text == selectedChoice.text);
+        bool isChoiceExist = _choices.any((choice) => choice.text == selectedChoice.text);
         if (!isChoiceExist) {
           _choices.add(selectedChoice);
-          _choiceControllers
-              .add(TextEditingController(text: selectedChoice.text));
+          _choiceControllers.add(TextEditingController(text: selectedChoice.text));
         }
       });
     }
@@ -428,7 +444,6 @@ class _CreateChoiceBoardScreenState extends State<CreateChoiceBoardScreen> {
                   TextEditingController controller = _choiceControllers[index];
                   showSaveButton = widget.initialChoiceBoard == null ? true : false;
                   // Determine if the choice is newly added
-                  bool isNewChoice = widget.initialChoiceBoard == null && choice.saved;
 
                   return Card(
                     child: Padding(
