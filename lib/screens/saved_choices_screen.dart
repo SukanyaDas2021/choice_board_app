@@ -515,81 +515,108 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          'Saved Choices',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.indigo[900],
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(
+            'Saved Choices',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.teal[900],
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-        elevation: 10,
-        shadowColor: Colors.purpleAccent,
-        backgroundColor: Colors.transparent, // Set to transparent for gradient
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue[100]!, Colors.indigo[400]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          elevation: 10,
+          shadowColor: Colors.tealAccent,
+          backgroundColor: Colors.transparent, // Set to transparent for gradient
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.teal[100]!, Colors.green[600]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Tooltip(
-              message: 'Add new choice',
-              child: InkWell(
-                onTap: _addNewChoice,
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.purple[100],
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.purpleAccent.withOpacity(0.4),
-                        blurRadius: 8,
-                        offset: Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  child: Row(
-                    children: [
-                      Icon(Icons.add, size: 24, color: Colors.indigo[800]),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Add',
-                        style: TextStyle(
-                          color: Colors.indigo[800],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Tooltip(
+                message: 'Add new choice',
+                child: InkWell(
+                  onTap: _addNewChoice,
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.purple[100],
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.purpleAccent.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: Offset(2, 2),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add, size: 24, color: Colors.indigo[800]),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Add',
+                          style: TextStyle(
+                            color: Colors.indigo[800],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Tooltip(
-              message: 'Search choices',
-              child: InkWell(
-                onTap: _searchChoice,
-                borderRadius: BorderRadius.circular(50),
-                child: Icon(Icons.search, size: 28, color: Colors.indigo[800]),
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Tooltip(
+                message: 'Search choices',
+                child: InkWell(
+                  onTap: _searchChoice,
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.purple[100],
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.purpleAccent.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, size: 24, color: Colors.indigo[800]),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Search',
+                          style: TextStyle(
+                            color: Colors.indigo[800],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: savedChoices.isEmpty
+          ],
+        ),
+        body: savedChoices.isEmpty
           ? Center(child: Text('No saved choices available.'))
           : ListView.builder(
         itemCount: savedChoices.length,
@@ -608,34 +635,34 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
             child: ListTile(
               leading: isImageValid
                   ? Image.file(
-                File(imagePath),
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-              )
-                  : null,
+                  File(imagePath),
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                )
+                    : null,
               title: Text(choice['text'] ?? 'No Text'),
               subtitle: isAudioValid
                   ? Row(
-                children: [
-                  IconButton(
-                    icon: Icon(isPlaying && currentAudioPath == audioPath
-                        ? Icons.pause
-                        : Icons.play_arrow),
-                    onPressed: () => _playPauseAudio(audioPath),
-                  ),
-                ],
-              )
+                    children: [
+                      IconButton(
+                        icon: Icon(isPlaying && currentAudioPath == audioPath
+                            ? Icons.pause
+                            : Icons.play_arrow),
+                        onPressed: () => _playPauseAudio(audioPath),
+                      ),
+                    ],
+                  )
                   : null,
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit),
+                    icon: Icon(Icons.edit, color: Colors.blue[800],),
                     onPressed: () => _editChoice(index),
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete),
+                    icon: Icon(Icons.delete, color: Colors.red,),
                     onPressed: () => _deleteChoice(index),
                   ),
                 ],
@@ -649,6 +676,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                   ),
                 );
               },
+              tileColor: Colors.lightBlue[50],
             ),
           );
         },
