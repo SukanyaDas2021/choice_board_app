@@ -35,11 +35,15 @@ class ChoiceDetailsDialog extends StatelessWidget {
                 children: [
                   // Display larger image if valid
                   isImageValid
-                      ? Image.file(
-                    File(imagePath),
-                    height: 300,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                      ? Container(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.5, // 50% of screen height
+                      maxWidth: MediaQuery.of(context).size.width * 0.9,  // 90% of screen width
+                    ),
+                    child: Image.file(
+                      File(imagePath),
+                      fit: BoxFit.contain, // Ensures the image fits inside the container
+                    ),
                   )
                       : Icon(
                     Icons.image_not_supported,
