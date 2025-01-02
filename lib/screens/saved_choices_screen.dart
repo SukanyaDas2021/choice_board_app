@@ -445,10 +445,11 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
             context: context,
             builder: (context)
             {
+              final screenWidth = MediaQuery.of(context).size.width;
               return AlertDialog(
-                title: Text('Search Results'),
+                title: Text('Search Results', textAlign: TextAlign.center,),
                 content: SizedBox(
-                  width: double.maxFinite,
+                  width: screenWidth * 0.75, //double.maxFinite,
                   child: ListView.builder(
                     shrinkWrap: true,
                     itemCount: foundChoices.length,
@@ -475,18 +476,25 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                         )
                             : SizedBox(width: 50, height: 50),
                         // Placeholder for alignment
-                        title: Text(
-                          choice['text'] ?? 'No Text',
-                          style: TextStyle(fontSize: 16),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                        title: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                choice['text'] ?? 'No Text',
+                                style: TextStyle(fontSize: 16),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                            if (isAudioValid)
+                              IconButton(
+                                icon: Icon(Icons.play_arrow),
+                                onPressed: () => _playPauseAudio(audioPath),
+                              ),
+                          ],
                         ),
-                        subtitle: isAudioValid
-                            ? IconButton(
-                          icon: Icon(Icons.play_arrow),
-                          onPressed: () => _playPauseAudio(audioPath),
-                        )
-                            : null,
+                            //: null,
                         // Empty if no audio
                         onTap: () {
                           Navigator.of(context).pop();
@@ -547,7 +555,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                   borderRadius: BorderRadius.circular(50),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.purple[100],
+                      color: Colors.purple[50],
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
@@ -585,7 +593,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                   borderRadius: BorderRadius.circular(50),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.purple[100],
+                      color: Colors.purple[50],
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(

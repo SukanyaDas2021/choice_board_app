@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.purple[100],
+                    color: Colors.purple[50],
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.purple[100],
+                    color: Colors.purple[50],
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
