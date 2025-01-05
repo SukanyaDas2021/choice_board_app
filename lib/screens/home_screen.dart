@@ -118,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Tooltip(
-              message: 'Add New Choice',
+              message: 'Create New Choice Board',
               child: InkWell(
                 onTap: () async {
                   final ChoiceBoard? newBoard = await Navigator.push(
@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(Icons.add, size: 24, color: Colors.indigo[800]),
                       const SizedBox(width: 4),
                       Text(
-                        'Add',
+                        'New',
                         style: TextStyle(
                           color: Colors.indigo[800],
                           fontWeight: FontWeight.bold,
@@ -198,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(Icons.visibility, size: 24, color: Colors.indigo[800]),
                       const SizedBox(width: 4),
                       Text(
-                        'Choice',
+                        'Choices',
                         style: TextStyle(
                           color: Colors.indigo[800],
                           fontWeight: FontWeight.bold,

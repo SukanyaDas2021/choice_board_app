@@ -81,6 +81,9 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
           final screenWidth = constraints.maxWidth;
           final screenHeight = constraints.maxHeight;
           final itemCount = choices.length;
+          double imageWidth = screenWidth * 0.8; // 80% of screen width
+          double imageHeight = screenHeight * 0.4;
+          double fontsize = MediaQuery.of(context).size.width * 0.05;
 
           // Determine the number of columns dynamically
           int crossAxisCount;
@@ -134,16 +137,24 @@ class _ChoiceBoardDetailScreenState extends State<ChoiceBoardDetailScreen> {
                             height: double.infinity,
                             fit: BoxFit.contain,
                           )
-                              : Icon(Icons.image, size: 50),
-                        ),
-                        SizedBox(height: 8.0),
-                        Text(
-                          choice.text,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                             // : Icon(Icons.image, size: screenWidth * 0.1),
+                              : Center(
+                            child: Text(
+                              choice.text,
+                              style: TextStyle(
+                                fontSize: fontsize,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
+                        SizedBox(height: 8.0),
+                        choice.imagePath.isNotEmpty
+                        ? Text(
+                            choice.text,
+                            style: TextStyle( fontSize: fontsize, fontWeight: FontWeight.bold, ),
+                          )
+                      : Text(" ")
                       ],
                     ),
                   ),

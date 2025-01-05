@@ -466,39 +466,46 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                               .trim()
                               .isNotEmpty;
 
-                      return ListTile(
-                        leading: isImageValid
-                            ? Image.file(
-                          File(imagePath),
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                        )
-                            : SizedBox(width: 50, height: 50),
-                        // Placeholder for alignment
-                        title: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                choice['text'] ?? 'No Text',
-                                style: TextStyle(fontSize: 16),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                            if (isAudioValid)
-                              IconButton(
-                                icon: Icon(Icons.play_arrow),
-                                onPressed: () => _playPauseAudio(audioPath),
-                              ),
-                          ],
+                      return Card(
+                        elevation: 2,
+                        margin: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                            //: null,
-                        // Empty if no audio
-                        onTap: () {
-                          Navigator.of(context).pop();
-                        },
+                        child: ListTile(
+                          leading: isImageValid
+                              ? Image.file(
+                            File(imagePath),
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          )
+                              : SizedBox(width: 50, height: 50),
+                          // Placeholder for alignment
+                          title: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  choice['text'] ?? 'No Text',
+                                  style: TextStyle(fontSize: 16),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              if (isAudioValid)
+                                IconButton(
+                                  icon: Icon(Icons.play_arrow),
+                                  onPressed: () => _playPauseAudio(audioPath),
+                                ),
+                            ],
+                          ),
+                              //: null,
+                          // Empty if no audio
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
                       );
                     },
                   ),
@@ -508,7 +515,7 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: Text('Close'),
+                    child: Text('Close', style: TextStyle(fontSize: 17),),
                   ),
                 ],
               );
@@ -546,6 +553,37 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
             ),
           ),
           actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Tooltip(
+                message: 'Go to Home',
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pushReplacementNamed(context, '/'); // Adjust route name if necessary
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.purple[50],
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.purpleAccent.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      children: [
+                        Icon(Icons.home, size: 30, color: Colors.indigo[800]),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: Tooltip(
@@ -649,19 +687,23 @@ class _SavedChoicesScreenState extends State<SavedChoicesScreen> {
                   fit: BoxFit.cover,
                 )
                     : null,
-              title: Text(choice['text'] ?? 'No Text'),
-              subtitle: isAudioValid
-                  ? Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(isPlaying && currentAudioPath == audioPath
-                            ? Icons.pause
-                            : Icons.play_arrow),
-                        onPressed: () => _playPauseAudio(audioPath),
-                      ),
-                    ],
-                  )
-                  : null,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    choice['text'] ?? 'No Text',
+                    overflow: TextOverflow.ellipsis, // Prevent text overflow
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  if (isAudioValid)
+                    IconButton(
+                      icon: Icon(isPlaying && currentAudioPath == audioPath
+                        ? Icons.pause
+                        : Icons.play_arrow),
+                      onPressed: () => _playPauseAudio(audioPath),
+                    ),
+                  ],
+                ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
